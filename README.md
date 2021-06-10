@@ -58,3 +58,12 @@ safety, I use a simple file format called
 unnecessary complexity in the data. Data will be analysed using the statistical scripting language
 <a href="https://www.r-project.org/">R</a>.
 
+## References
+
+| #   | Full reference |
+| --: | :-- |
+| _1_ | Nair, Changsing, Stewart and McHenry (2017). _Fish prey change strategy with the direction of a threat._ Proceedings of the Royal Society B, 284(1857), 20170393. DOI: <a href="https://royalsocietypublishing.org/doi/10.1098/rspb.2017.0393">10.1098/rspb.2017.0393</a> |
+| _2_ | Zheng, Kashimori, Hoshino, Fujita and Kambara (2004). _Behaviour pattern (innate action) of individuals in fish schools generating efficient collective evasion from predation._ Journal of Theoretical Biology, 235(2), pp. 153–167. DOI: <a href="https://www.sciencedirect.com/science/article/abs/pii/S0022519305000056?via%3Dihub">10.1016/j.jtbi.2004.12.025</a> |
+| _3_ | Domenici, Blagburn and Bacon (2011). _Animal escapolog I: theoretical issues and emerging trends in escape trajectories._ The Journal of Experimental Biology, 214(15), pp. 2463–2473. DOI: <a href="https://journals.biologists.com/jeb/article/214/15/2463/10427/Animal-escapology-I-theoretical-issues-and">10.1242/jeb.029652</a> |
+| _4_ | Cooper Jr. (2016). _Directional escape strategy by the striped plateau lizard_ (Sceloporus virgatus)_: turning to direct escape away from predators at variable escape angles._ Behaviour 153(4), pp. 401–419. DOI: <a href="https://brill.com/view/journals/beh/153/4/article-p401_2.xml">10.1163/1568539X-00003353</a> |
+
