@@ -1,0 +1,11 @@
+# MacOS
+.DS_Store
+
+
+# Vim
+*.swp
+
+
+# R
+.Rhistory
+
