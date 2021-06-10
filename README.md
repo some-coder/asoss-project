@@ -2,7 +2,7 @@
 
 This is my repository for the final project of Advanced Self-Organisation of Social Systems (ASOSS), year 2021.
 
-**Contact details.** Niels de Jong (s3366235) <a href="mailto:n.a.de.jong@student.rug.nl">mail</a>.
+**Contact details.** Niels de Jong (s3366235), <a href="mailto:n.a.de.jong@student.rug.nl">mail</a>.
 
 ## Research question and strategies
 
