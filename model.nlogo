@@ -110,6 +110,10 @@ to select-escape-task [dt]
   if escape-strategy = "turn 90 deg" [ run   [ [] -> escape-90 dt ] ]
   if escape-strategy = "sacrifice" [ run   [ [] -> escape-sacrifice dt ] ]
   if escape-strategy = "sprint" [ run   [ [] ->  escape-sprint dt ] ]
+  if escape-strategy = "mixed" [ run   [ [] ->  escape-mixed dt ] ]
+  if escape-strategy = "optimal" [ run   [ [] ->  escape-optimal dt ] ]
+  if escape-strategy = "protean" [ run   [ [] ->  escape-protean dt ] ]
+  if escape-strategy = "biased" [ run   [ [] ->  escape-biased dt ] ]
 end
 
 
@@ -280,6 +284,50 @@ to escape-sprint [dt]
   set delta-speed delta-speed + dt * speed  * (1 - flocking-weight)
 end
 
+to escape-mixed [dt]
+  let front-angle 20
+  ifelse ( (predator-in-angular-region (-1 * front-angle) front-angle) or (predator-in-angular-region (180 - front-angle) (-1 * (180 - front-angle))) ) [
+    ; predator is at the front or back
+    escape-protean dt
+  ][
+    ; predator is to the left or right
+    escape-90 dt
+  ]
+end
+
+to escape-optimal [dt]
+  let optimal-angle (asin (speed / predator-speed))
+  let rpa relative-predator-angle
+  ; correct optimal angle for relative position of predator to prey
+  ifelse (rpa < 0) [
+    ; predator is to the left
+    set optimal-angle (optimal-angle + (180 + rpa))
+  ][
+    ; predator is to the right
+    set optimal-angle (optimal-angle - (180 - rpa))
+  ]
+  let turn-angle (180 - (optimal-angle + 90))  ; Bias to turn right. To bias to the left instead, use ... - 180.
+  turn-towards ((heading + turn-angle) mod 360) (max-escape-turn * dt * (1 - flocking-weight))
+end
+
+to escape-protean [dt]
+  ; Caveat: what if the fish swims straight into the direction of the predator?
+  let random-angle random (360 + 1)
+  set random-angle (random-angle - 180)  ; to get a uniform distribution from -180 to 180, both ends inclusive
+  turn-towards random-angle (max-escape-turn * dt * (1 - flocking-weight))
+end
+
+to escape-biased [dt]
+  let random-threshold 90  ; 90% of the cases lead to a right turn
+  let random-value (random 100)
+  let random-turn (random 180)
+  ifelse (random-value < random-threshold) [
+    turn-towards random-turn (max-escape-turn * dt * (1 - flocking-weight))
+  ][
+    turn-towards (-1 * random-turn) (max-escape-turn * dt * (1 - flocking-weight))
+  ]
+end
+
 ;;; HELPER PROCEDURES
 
 to turn-towards [new-heading max-turn]  ;; fish procedure
@@ -298,6 +346,39 @@ to turn-at-most [turn max-turn]  ;; turtle procedure
         [ rt max-turn ]
         [ lt max-turn ] ]
     [ rt turn ]
+end
+
+
+;;; EXTRA HELPER PROCEDURES
+
+
+to-report relative-predator-angle
+  let x [xcor] of nearest-predator
+  let y [ycor] of nearest-predator
+  set x (x - xcor)
+  set y (y - ycor)
+  ; get normalised angular position of the predator
+  let pred-angle atan x y
+  set pred-angle subtract-headings pred-angle heading  ; negative: to the left, positive: to the right
+  report pred-angle
+end
+
+
+to-report predator-in-angular-region [angle-start angle-stop]
+  ; A `fish` procedure that determines whether the nearest predator's
+  ; relative angular position w.r.t. the fish lies within the specified
+  ; angular range.
+  ;
+  ; :param angle-start: The starting angle relative to the fish. Inclusive.
+  ; :param angle-stop: The stopping angle relative to the fish. Inclusive.
+  ; get relative position of the predator w.r.t. the fish
+  let pred-angle relative-predator-angle
+  ; check whether predator is in specified angle
+  ifelse angle-start > angle-stop [
+    report ((pred-angle >= angle-start) or (pred-angle <= angle-stop))
+  ][
+    report ((pred-angle >= angle-start) and (pred-angle <= angle-stop))
+  ]
 end
 
 
@@ -627,7 +708,7 @@ SWITCH
 87
 hunting?
 hunting?
-1
+0
 1
 -1000
 
@@ -1265,7 +1346,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0
+NetLogo 6.2.0
 @#$#@#$#@
 set population 200
 setup
