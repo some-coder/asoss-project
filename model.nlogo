@@ -84,7 +84,10 @@ to go
           ( select-escape-task dt )
           set weight flocking-weight
         ]
-        flock dt * weight
+        if not ((escape-strategy = "cooperative-selfish") and ((nearest-predator-distance nearest-predator) < selfish-distance)) [  ; TODO: Change this to a slider!
+          ; Skip flocking if we're following the (partially) selfish strategy.
+          flock dt * weight
+        ]
       ]
     ]
     if t mod (11 - predator-update-freq) = 0 [
@@ -120,6 +123,7 @@ to select-escape-task [dt]
   if escape-strategy = "sacrifice" [ run   [ [] -> escape-sacrifice dt ] ]
   if escape-strategy = "sprint" [ run   [ [] ->  escape-sprint dt ] ]
   if escape-strategy = "mixed" [ run   [ [] ->  escape-mixed dt ] ]
+  if escape-strategy = "cooperative-selfish" [ run   [ [] ->  escape-cooperative-selfish dt ] ]
   if escape-strategy = "optimal" [ run   [ [] ->  escape-optimal dt ] ]
   if escape-strategy = "protean" [ run   [ [] ->  escape-protean dt ] ]
   if escape-strategy = "biased" [ run   [ [] ->  escape-biased dt ] ]
@@ -304,6 +308,13 @@ to escape-mixed [dt]
   ]
 end
 
+to escape-cooperative-selfish [dt]
+  ; The point of this strategy is that when a predator gets sufficiently close-by,
+  ; the `escape-90` gets executed without regard of flocking (cohering, separation,
+  ; alignment); fish become selfish.
+  escape-protean dt
+end
+
 to escape-optimal [dt]
   let delta subtract-headings heading [heading] of nearest-predator
   let optimal-turn (90 - (asin (speed / predator-speed)))
@@ -378,7 +389,6 @@ to-report relative-predator-angle
   report pred-angle
 end
 
-
 to-report predator-in-angular-region [angle-start angle-stop]
   ; A `fish` procedure that determines whether the nearest predator's
   ; relative angular position w.r.t. the fish lies within the specified
@@ -393,6 +403,16 @@ to-report predator-in-angular-region [angle-start angle-stop]
     report ((pred-angle >= angle-start) or (pred-angle <= angle-stop))
   ][
     report ((pred-angle >= angle-start) and (pred-angle <= angle-stop))
+  ]
+end
+
+to-report nearest-predator-distance [np]
+  ifelse (np = nobody) [
+    report 999  ; just a large value
+  ][
+    let pred-x [xcor] of np
+    let pred-y [ycor] of np
+    report (pred-x * pred-x) + (pred-y * pred-y)
   ]
 end
 
@@ -470,7 +490,7 @@ population
 population
 1.0
 1000.0
-1.0
+100.0
 1.0
 1
 NIL
@@ -620,7 +640,7 @@ speed
 speed
 0
 2
-0.6
+0.4
 0.1
 1
 patches/tick
@@ -853,8 +873,8 @@ CHOOSER
 604
 escape-strategy
 escape-strategy
-"default" "turn 90 deg" "sacrifice" "sprint" "mixed" "optimal" "protean" "biased"
-6
+"default" "turn 90 deg" "sacrifice" "sprint" "mixed" "cooperative-selfish" "optimal" "protean" "biased"
+5
 
 SLIDER
 11
@@ -973,6 +993,31 @@ always_react?
 1
 1
 -1000
+
+SLIDER
+1037
+40
+1270
+73
+selfish-distance
+selfish-distance
+0.0
+5.0
+1.0
+0.1
+1
+patches
+HORIZONTAL
+
+TEXTBOX
+1038
+18
+1188
+36
+Extra strategy variables
+12
+0.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
