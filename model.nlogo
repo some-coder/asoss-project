@@ -10,19 +10,22 @@ breed [predators predator]
 
 
 fish-own [
-  flockmates         ;; agentset of nearby fish
-  nearest-neighbor   ;; closest one of our flockmates
-  nearest-predator   ;; closest predator in range
-  vision             ;; current vision range
-  delta-speed        ;; random speed dev. per update
-  delta-noise        ;; random rotation per update
+  flockmates            ;; agentset of nearby fish
+  nearest-neighbor      ;; closest one of our flockmates
+  nearest-predator      ;; closest predator in range
+  vision                ;; current vision range
+  delta-speed           ;; random speed dev. per update
+  delta-noise           ;; random rotation per update
+  ; New.
+  last-random-subtick   ;; Last subtick at which a random turn was undertaken.
+  last-random-dir       ;; Last direction undertaken for random turning. Is an absolute (not relative) heading!
 ]
 
 predators-own [
   nearest-prey
-  locked-on          ;; locked on prey if any
-  delta-noise        ;; random rotation per update
-  handle-time        ;; count down handle time
+  locked-on             ;; locked on prey if any
+  delta-noise           ;; random rotation per update
+  handle-time           ;; count down handle time
 ]
 
 globals [
@@ -32,6 +35,8 @@ globals [
   counter
   ordetect
   prevprey
+  ; New.
+  subticks              ;; Keep track of 'de-facto' ticks, taking into account updating frequency.
 ]
 
 to setup
@@ -41,11 +46,14 @@ to setup
     set size 1.5
     set vision max-vision
     setxy random-xcor random-ycor
+    ; New.
+    set last-random-subtick -1
   ]
   set counter 0
   set lock-ons 0
   set ordetect 8
   reset-ticks
+  set subticks 0
 end
 
 to go
@@ -95,6 +103,7 @@ to go
       fd 0.1 * predator-speed
     ]
     set t t + 1
+    set subticks (subticks + 1)  ; Update de-facto ticks.
   ]
   if not hunting?
   [set counter counter + 1]
@@ -296,35 +305,41 @@ to escape-mixed [dt]
 end
 
 to escape-optimal [dt]
-  let optimal-angle (asin (speed / predator-speed))
-  let rpa relative-predator-angle
-  ; correct optimal angle for relative position of predator to prey
-  ifelse (rpa < 0) [
-    ; predator is to the left
-    set optimal-angle (optimal-angle + (180 + rpa))
+  let delta subtract-headings heading [heading] of nearest-predator
+  let optimal-turn (90 - (asin (speed / predator-speed)))
+  ifelse (delta > 0) [
+    turn-towards ([heading] of nearest-predator + optimal-turn) (max-escape-turn * dt * (1 - flocking-weight))
   ][
-    ; predator is to the right
-    set optimal-angle (optimal-angle - (180 - rpa))
+    turn-towards ([heading] of nearest-predator - optimal-turn) (max-escape-turn * dt * (1 - flocking-weight))
   ]
-  let turn-angle (180 - (optimal-angle + 90))  ; Bias to turn right. To bias to the left instead, use ... - 180.
-  turn-towards ((heading + turn-angle) mod 360) (max-escape-turn * dt * (1 - flocking-weight))
+end
+
+to escape-set-direction [dt direction]
+  ; Escape in the absolute heading `direction`. In subsequent ticks of a single escape,
+  ; the direction does not change. Only if a temporal gap of at least one tick is
+  ; detected between two escape attempts, the `direction` is used to re-orient the fish.
+  if last-random-subtick != (subticks - 1) [
+    ; The fish is in a new escape sequence. Set up the specified escape direction.
+    set last-random-dir direction
+  ]
+  turn-towards last-random-dir (max-escape-turn * dt * (1 - flocking-weight))
+  set last-random-subtick subticks
 end
 
 to escape-protean [dt]
-  ; Caveat: what if the fish swims straight into the direction of the predator?
-  let random-angle random (360 + 1)
-  set random-angle (random-angle - 180)  ; to get a uniform distribution from -180 to 180, both ends inclusive
-  turn-towards random-angle (max-escape-turn * dt * (1 - flocking-weight))
+  escape-set-direction dt (random 360)
 end
 
 to escape-biased [dt]
   let random-threshold 90  ; 90% of the cases lead to a right turn
-  let random-value (random 100)
+  let random-value (random 100)  ; for deciding whether to turn left or right, like `p` in a Bernoulli distribution
   let random-turn (random 180)
   ifelse (random-value < random-threshold) [
-    turn-towards random-turn (max-escape-turn * dt * (1 - flocking-weight))
+    ; Turn right.
+    escape-set-direction dt ((heading + random-turn) mod 360)
   ][
-    turn-towards (-1 * random-turn) (max-escape-turn * dt * (1 - flocking-weight))
+    ; Turn left.
+    escape-set-direction dt ((heading - random-turn) mod 360)
   ]
 end
 
@@ -455,7 +470,7 @@ population
 population
 1.0
 1000.0
-300.0
+1.0
 1.0
 1
 NIL
@@ -605,7 +620,7 @@ speed
 speed
 0
 2
-0.4
+0.6
 0.1
 1
 patches/tick
@@ -838,8 +853,8 @@ CHOOSER
 604
 escape-strategy
 escape-strategy
-"default" "turn 90 deg" "sacrifice" "sprint"
-0
+"default" "turn 90 deg" "sacrifice" "sprint" "mixed" "optimal" "protean" "biased"
+6
 
 SLIDER
 11
