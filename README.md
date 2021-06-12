@@ -11,14 +11,14 @@ absolute number of catches in the `Flocking_TrPEsH.nlogo` model?
 
 | #   | Strategy | Details | References |
 | :-- | :------- | :------ | :--------- |
-| 1 | Mixed | Turn uniformly randomly at the front and back, and turn perpendicular to the threat when the threat is lateral. | _1_ |
-| 2 | Cooperative-selfish | Unless the threat is very close, try to escape while following other fish; otherwise escape selfishly by moving directly away from the predator. | _2_ |
-| 3 | Zig-zag | Move away from the threat while making lateral deviations. | _3_ (p. 2464) |
-| 4 | Optimal | Turn away from the threat by `90 + arcsin(velocity_prey / velocity_predator)` degrees. | _3_ (p. 2467) |
+| 1 | Mixed | Turn uniformly randomly at the foremost and backmost 40 degrees of the fish, and turn perpendicular to the threat when the threat to one of the fish's sides. | _1_ |
+| 2 | Cooperative-selfish | Unless the threat is very close, try to escape while still flocking with other fish; otherwise escape selfishly (forgetting about flocking) by turning perpendicular from the threat. | _2_ |
+| 3 | Zig-zag | Move away from the threat while making lateral deviations in a sine-wave-like motion. | _3_ (p. 2464) |
+| 4 | Optimal | Turn away from the threat by `90 + asin(speed / predator-speed)` degrees. | _3_ (p. 2467) |
 | 5 | Protean | Turn uniformly randomly, always. | _3_ (p. 2464) |
-| 6 | Biased | Opt to turn right (left) most of the time. Given a selected direction, turn using a uniformly randomly generated degree between 0 and `max-turn-angle`. | _3_ (p. 2464) |
-| 7 | Refuges | If a refuge is near, move to the refuge. Otherwise escape directly away from the predator. | _4_, _3_ (p. 2468) |
-| 7 | Weighted refuges | Like (7), but take into account nearby predators even when planning to move to a refuge. | _4_, _3_ (p. 2468) |
+| 6 | Biased | Opt to turn right 90% of the time. Then turn in said direction by a uniformly randomly generated degree between 0 and 180. | _3_ (p. 2464) |
+| 7 | Refuges | If a refuge is near, move to the refuge. Otherwise take no action. | _4_, _3_ (p. 2468) |
+| 7 | Refuges with escaping | Like (7), but try to escape by turning away perpendicularly from the threat when no refuge is in sight. | _4_, _3_ (p. 2468) |
 
 **Corollary I.** Which strategy leads to the lowest ratio of catches to lock-ons?
 
