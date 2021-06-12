@@ -17,8 +17,11 @@ fish-own [
   delta-speed           ;; random speed dev. per update
   delta-noise           ;; random rotation per update
   ; New.
-  last-random-subtick   ;; Last subtick at which a random turn was undertaken.
-  last-random-dir       ;; Last direction undertaken for random turning. Is an absolute (not relative) heading!
+  last-esc-subtick      ;; Last subtick of a single escape.
+  last-esc-dir          ;; Last escape direction. Is an absolute (not relative) heading!
+  ; Both are used for the zig-zag method.
+  esc-start-subtick     ;; Starting subtick of escape.
+  esc-start-heading     ;; Start heading of escape, straight away from the predator.
 ]
 
 predators-own [
@@ -47,7 +50,7 @@ to setup
     set vision max-vision
     setxy random-xcor random-ycor
     ; New.
-    set last-random-subtick -1
+    set last-esc-subtick -1
   ]
   set counter 0
   set lock-ons 0
@@ -84,7 +87,7 @@ to go
           ( select-escape-task dt )
           set weight flocking-weight
         ]
-        if not ((escape-strategy = "cooperative-selfish") and ((nearest-predator-distance nearest-predator) < selfish-distance)) [  ; TODO: Change this to a slider!
+        if not ((escape-strategy = "cooperative-selfish") and ((nearest-predator-distance nearest-predator) < selfish-distance)) [
           ; Skip flocking if we're following the (partially) selfish strategy.
           flock dt * weight
         ]
@@ -124,6 +127,7 @@ to select-escape-task [dt]
   if escape-strategy = "sprint" [ run   [ [] ->  escape-sprint dt ] ]
   if escape-strategy = "mixed" [ run   [ [] ->  escape-mixed dt ] ]
   if escape-strategy = "cooperative-selfish" [ run   [ [] ->  escape-cooperative-selfish dt ] ]
+  if escape-strategy = "zig-zag" [ run   [ [] ->  escape-zig-zag dt ] ]
   if escape-strategy = "optimal" [ run   [ [] ->  escape-optimal dt ] ]
   if escape-strategy = "protean" [ run   [ [] ->  escape-protean dt ] ]
   if escape-strategy = "biased" [ run   [ [] ->  escape-biased dt ] ]
@@ -311,8 +315,25 @@ end
 to escape-cooperative-selfish [dt]
   ; The point of this strategy is that when a predator gets sufficiently close-by,
   ; the `escape-90` gets executed without regard of flocking (cohering, separation,
-  ; alignment); fish become selfish.
-  escape-protean dt
+  ; alignment); fish become selfish. For said mechanism, see the `go` procedure.
+  escape-90 dt
+end
+
+to escape-zig-zag [dt]
+  if last-esc-subtick != (subticks - 1) [
+    let rpa relative-predator-angle
+    ifelse rpa > 0 [
+      set esc-start-heading (heading + (rpa - 180))
+    ][
+      set esc-start-heading (heading + (rpa + 180))
+    ]
+    set esc-start-subtick subticks
+  ]
+  let freq (update-freq * zig-zag-freq)
+  let cos-t (360 / freq) * (subticks - esc-start-subtick)
+  set last-esc-dir esc-start-heading + (90 * (cos cos-t))
+  turn-towards last-esc-dir (max-escape-turn * dt * (1 - flocking-weight))
+  set last-esc-subtick subticks
 end
 
 to escape-optimal [dt]
@@ -329,12 +350,12 @@ to escape-set-direction [dt direction]
   ; Escape in the absolute heading `direction`. In subsequent ticks of a single escape,
   ; the direction does not change. Only if a temporal gap of at least one tick is
   ; detected between two escape attempts, the `direction` is used to re-orient the fish.
-  if last-random-subtick != (subticks - 1) [
+  if last-esc-subtick != (subticks - 1) [
     ; The fish is in a new escape sequence. Set up the specified escape direction.
-    set last-random-dir direction
+    set last-esc-dir direction
   ]
-  turn-towards last-random-dir (max-escape-turn * dt * (1 - flocking-weight))
-  set last-random-subtick subticks
+  turn-towards last-esc-dir (max-escape-turn * dt * (1 - flocking-weight))
+  set last-esc-subtick subticks
 end
 
 to escape-protean [dt]
@@ -490,7 +511,7 @@ population
 population
 1.0
 1000.0
-100.0
+1.0
 1.0
 1
 NIL
@@ -873,8 +894,8 @@ CHOOSER
 604
 escape-strategy
 escape-strategy
-"default" "turn 90 deg" "sacrifice" "sprint" "mixed" "cooperative-selfish" "optimal" "protean" "biased"
-5
+"default" "turn 90 deg" "sacrifice" "sprint" "mixed" "cooperative-selfish" "zig-zag" "optimal" "protean" "biased"
+6
 
 SLIDER
 11
@@ -1018,6 +1039,21 @@ Extra strategy variables
 12
 0.0
 1
+
+SLIDER
+1037
+80
+1270
+113
+zig-zag-freq
+zig-zag-freq
+5
+40
+20.0
+1
+1
+ticks
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
