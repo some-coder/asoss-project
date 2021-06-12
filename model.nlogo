@@ -45,7 +45,7 @@ globals [
 ]
 
 to create-refuges  ; observer method
-  if (escape-strategy = "refuge") [
+  if (escape-strategy = "refuge" or escape-strategy = "refuge-escape") [
     ; Only create refuges when the strategy involves them.
     let i refuge-num
     loop [
@@ -161,7 +161,8 @@ to select-escape-task [dt]
   if escape-strategy = "optimal" [ run   [ [] ->  escape-optimal dt ] ]
   if escape-strategy = "protean" [ run   [ [] ->  escape-protean dt ] ]
   if escape-strategy = "biased" [ run   [ [] ->  escape-biased dt ] ]
-  if escape-strategy = "refuge" [ run   [ [] ->  escape-refuge dt ] ]
+  if escape-strategy = "refuge" [ run   [ [] ->  escape-refuge dt false] ]
+  if escape-strategy = "refuge-escape" [ run   [ [] ->  escape-refuge dt true] ]
 end
 
 
@@ -187,7 +188,7 @@ end
 
 to find-nearest-refuge ;; fish procedure
   set nearest-refuge nobody
-  if (escape-strategy = "refuge") [
+  if (escape-strategy = "refuge" or escape-strategy = "refuge-escape") [
     set nearest-refuge min-one-of (patches with [ pcolor = 2 ]) in-cone refuge-detection-range FOV [ distance myself ]
   ]
 end
@@ -417,7 +418,7 @@ to escape-biased [dt]
   ]
 end
 
-to escape-refuge [dt]
+to escape-refuge [dt also-escape]
   ifelse (nearest-refuge != nobody) [
     ; go to the refuge
     ifelse (([pcolor] of (patch xcor ycor)) = 2) [
@@ -428,8 +429,9 @@ to escape-refuge [dt]
       turn-towards (heading + relative-refuge-angle) (max-escape-turn * dt * (1 - flocking-weight))
     ]
   ][
-    ; follow a standard escape mechanism
-    escape-90 dt
+    if also-escape [
+      escape-90 dt
+    ]
   ]
 end
 
@@ -962,7 +964,7 @@ CHOOSER
 604
 escape-strategy
 escape-strategy
-"default" "turn 90 deg" "sacrifice" "sprint" "mixed" "cooperative-selfish" "zig-zag" "optimal" "protean" "biased" "refuge"
+"default" "turn 90 deg" "sacrifice" "sprint" "mixed" "cooperative-selfish" "zig-zag" "optimal" "protean" "biased" "refuge" "refuge-escape"
 10
 
 SLIDER
