@@ -17,11 +17,13 @@ fish-own [
   delta-speed           ;; random speed dev. per update
   delta-noise           ;; random rotation per update
   ; New.
+  nearest-refuge        ;; closest refuge in user-set range
   last-esc-subtick      ;; Last subtick of a single escape.
   last-esc-dir          ;; Last escape direction. Is an absolute (not relative) heading!
   ; Both are used for the zig-zag method.
   esc-start-subtick     ;; Starting subtick of escape.
   esc-start-heading     ;; Start heading of escape, straight away from the predator.
+  is-at-refuge          ;; Whether the fish is at a refuge.
 ]
 
 predators-own [
@@ -42,16 +44,7 @@ globals [
   subticks              ;; Keep track of 'de-facto' ticks, taking into account updating frequency.
 ]
 
-to setup
-  clear-all
-  create-fish population [
-    set color yellow - 2 + random 7  ;; random shades look nice ?
-    set size 1.5
-    set vision max-vision
-    setxy random-xcor random-ycor
-    ; New.
-    set last-esc-subtick -1
-  ]
+to create-refuges  ; observer method
   if (escape-strategy = "refuge") [
     ; Only create refuges when the strategy involves them.
     let i refuge-num
@@ -70,6 +63,20 @@ to setup
       ]
     ]
   ]
+end
+
+to setup
+  clear-all
+  create-fish population [
+    set color yellow - 2 + random 7  ;; random shades look nice ?
+    set size 1.5
+    set vision max-vision
+    setxy random-xcor random-ycor
+    ; New.
+    set last-esc-subtick -1
+    set is-at-refuge false
+  ]
+  create-refuges
   set counter 0
   set lock-ons 0
   set ordetect 8
@@ -101,9 +108,13 @@ to go
       ask fish [
         let weight 1
         find-nearest-predator
-        if nearest-predator != nobody [
+        find-nearest-refuge
+        ifelse nearest-predator != nobody [
           ( select-escape-task dt )
           set weight flocking-weight
+        ][
+          ; We don't need to escape anymore, so we're not hiding at any refuge (anymore).
+          set is-at-refuge false
         ]
         if not ((escape-strategy = "cooperative-selfish") and ((nearest-predator-distance nearest-predator) < selfish-distance)) [
           ; Skip flocking if we're following the (partially) selfish strategy.
@@ -137,6 +148,7 @@ to go
   tick
 end
 
+;; FISH PROCEDURES
 
 to select-escape-task [dt]
   if escape-strategy = "default" [ run   [ [] -> escape-default dt ] ] ;report task escape-default
@@ -149,6 +161,7 @@ to select-escape-task [dt]
   if escape-strategy = "optimal" [ run   [ [] ->  escape-optimal dt ] ]
   if escape-strategy = "protean" [ run   [ [] ->  escape-protean dt ] ]
   if escape-strategy = "biased" [ run   [ [] ->  escape-biased dt ] ]
+  if escape-strategy = "refuge" [ run   [ [] ->  escape-refuge dt ] ]
 end
 
 
@@ -169,6 +182,13 @@ to find-nearest-predator ;; fish procedure
   if (hunting? or always_react?)
   [
     set nearest-predator min-one-of predators in-cone detection-range FOV [distance myself]
+  ]
+end
+
+to find-nearest-refuge ;; fish procedure
+  set nearest-refuge nobody
+  if (escape-strategy = "refuge") [
+    set nearest-refuge min-one-of (patches with [ pcolor = 2 ]) in-cone refuge-detection-range FOV [ distance myself ]
   ]
 end
 
@@ -236,7 +256,8 @@ to select-prey [dt] ;; predator procedure
     set nearest-prey min-one-of fish in-cone predator-vision predator-FOV [distance myself]
     ifelse locked-on != nobody and
          ((nearest-prey = nobody or distance nearest-prey > lock-on-distance) or
-         (nearest-prey != locked-on))
+          (nearest-prey != locked-on) or
+          (([is-at-refuge] of nearest-prey) = true))
       [
         ;; lost it
         release-locked-on
@@ -267,8 +288,7 @@ to select-prey [dt] ;; predator procedure
 end
 
 to hunt [dt] ;; predator procedure
-  if nearest-prey != nobody
-  [
+  if nearest-prey != nobody [
     turn-towards towards nearest-prey max-hunt-turn * dt
     if locked-on != nobody [
       if locked-on = min-one-of fish in-cone catch-distance 10 [distance myself]
@@ -287,7 +307,11 @@ to hunt [dt] ;; predator procedure
 end
 
 to release-locked-on
-  if locked-on != nobody [ask locked-on [set color yellow - 2 + random 7]]
+  if (locked-on != nobody) [
+    ask locked-on [
+      set color yellow - 2 + random 7
+    ]
+  ]
   set locked-on nobody
   set nearest-prey nobody
   set prevprey nobody
@@ -393,6 +417,22 @@ to escape-biased [dt]
   ]
 end
 
+to escape-refuge [dt]
+  ifelse (nearest-refuge != nobody) [
+    ; go to the refuge
+    ifelse (([pcolor] of (patch xcor ycor)) = 2) [
+      ; already at a refuge, so stay here
+      set is-at-refuge true
+      set delta-speed (0.01 * delta-speed)  ; slow down rapidly
+    ][
+      turn-towards (heading + relative-refuge-angle) (max-escape-turn * dt * (1 - flocking-weight))
+    ]
+  ][
+    ; follow a standard escape mechanism
+    escape-90 dt
+  ]
+end
+
 ;;; HELPER PROCEDURES
 
 to turn-towards [new-heading max-turn]  ;; fish procedure
@@ -426,6 +466,16 @@ to-report relative-predator-angle
   let pred-angle atan x y
   set pred-angle subtract-headings pred-angle heading  ; negative: to the left, positive: to the right
   report pred-angle
+end
+
+to-report relative-refuge-angle
+  let x [pxcor] of nearest-refuge
+  let y [pycor] of nearest-refuge
+  set x (x - xcor)
+  set y (y - ycor)
+  let refuge-angle atan x y
+  set refuge-angle subtract-headings refuge-angle heading
+  report refuge-angle
 end
 
 to-report predator-in-angular-region [angle-start angle-stop]
@@ -1097,6 +1147,21 @@ Extra environment variables
 12
 0.0
 1
+
+SLIDER
+1037
+193
+1270
+226
+refuge-detection-range
+refuge-detection-range
+0
+10
+5.0
+1
+1
+patches
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
