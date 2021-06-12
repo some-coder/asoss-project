@@ -52,6 +52,24 @@ to setup
     ; New.
     set last-esc-subtick -1
   ]
+  if (escape-strategy = "refuge") [
+    ; Only create refuges when the strategy involves them.
+    let i refuge-num
+    loop [
+      if (i <= 0) [
+        stop
+      ]
+      let x random-pxcor
+      let y random-pycor
+      if (([pcolor] of (patch random-pxcor random-pycor)) != 2) [
+        ; Ensure we select a patch that is not already a refuge.
+        ask patch x y [
+          set pcolor 2
+        ]
+        set i (i - 1)
+      ]
+    ]
+  ]
   set counter 0
   set lock-ons 0
   set ordetect 8
@@ -894,8 +912,8 @@ CHOOSER
 604
 escape-strategy
 escape-strategy
-"default" "turn 90 deg" "sacrifice" "sprint" "mixed" "cooperative-selfish" "zig-zag" "optimal" "protean" "biased"
-6
+"default" "turn 90 deg" "sacrifice" "sprint" "mixed" "cooperative-selfish" "zig-zag" "optimal" "protean" "biased" "refuge"
+10
 
 SLIDER
 11
@@ -1054,6 +1072,31 @@ zig-zag-freq
 1
 ticks
 HORIZONTAL
+
+SLIDER
+1038
+154
+1269
+187
+refuge-num
+refuge-num
+0
+100
+20.0
+1
+1
+refuges
+HORIZONTAL
+
+TEXTBOX
+1039
+136
+1248
+166
+Extra environment variables
+12
+0.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
