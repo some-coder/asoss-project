@@ -30,6 +30,9 @@ STRATEGY_NAMES <- list(
 	'refuge-escape'='Refuge-escape')
 
 
+ERROR_BAR_WIDTH = 1e1
+
+
 load_libraries <- function() {
 	lbs <- c('ggplot2', 'cowplot', 'plyr')
 	for (lb in lbs) {
@@ -76,7 +79,7 @@ single_fish_predation_plot <- function(dat, vbl, ttl) {
 		mapping=aes(
 			ymin=mean - error,
 			ymax=mean + error),
-		width=3e0,
+		width=ERROR_BAR_WIDTH,
 		col=VARIABLE_COLORS[[vbl]])
 	plt <- plt +
 		xlab('Size of fish school') +
@@ -93,11 +96,12 @@ single_fish_predation_plot <- function(dat, vbl, ttl) {
 				VBLS_AS_STRINGS[[vbl]],
 				'\n    over 10 runs per school size, at 2000 ticks'))
 	plt <- plt + scale_x_continuous(
-		breaks=c(50, 100, 300),
-		minor_breaks=c(25, 75, 125, 150, 175, 200, 225, 250, 275),
-		limits=c(2e1, 32e1))
+		breaks=c(100, 200, 300),
+		minor_breaks=c(),
+		limits=c(50, 350))
 	plt <- plt + scale_y_continuous(
-		limits=if (vbl == 'c_over_l') { c(-1e-7, 0.8) } else { c(-1e-7, 0.000555) })
+		minor_breaks=c(),
+		limits=if (vbl == 'c_over_l') { c(-1e-7, 0.3) } else { c(-1e-7, 18.5) })
 	plt <- plt + theme_light()
 	return(plt)
 }
@@ -138,8 +142,8 @@ main <- function() {
 		OUTPUT_FILE_NAME,
 		plot=grd,
 		device='pdf',
-		width=9,
-		height=26)
+		width=13,
+		height=19.5)
 	return('Exit success.')
 }
 
