@@ -129,7 +129,7 @@ to go
           ; We don't need to escape anymore, so we're not hiding at any refuge (anymore).
           set is-at-refuge false
         ]
-        if not ((escape-strategy = "solitary-when-nearby") and ((nearest-predator-distance nearest-predator) < selfish-distance)) [
+        if not ((escape-strategy = "solitary-when-nearby") and ((nearest-predator-distance nearest-predator) < solitary-distance)) [
           ; Skip flocking if we're following the (partially) selfish strategy.
           flock dt * weight
         ]
@@ -415,20 +415,31 @@ to escape-set-direction [dt direction]
 end
 
 to escape-protean [dt]
-  escape-set-direction dt (random 360)
+  if (last-esc-subtick != (subticks - 1)) or ((subticks - esc-start-subtick) > (update-freq * protean-turn-interval)) [
+    ; If the fish needs to do a new escape manouver, or if it is time to
+    ; update the escape direction, draw a new pseudo-random direction.
+    ;   The direction can be any absolute angle in 360 degrees, except
+    ; the direction from which the predator is heading plus and minus
+    ; a 'danger-half-angle' range around this angle; these angles
+    ; are clearly suboptimal to swim towards to.
+    set esc-start-heading ((relative-predator-angle + danger-half-angle + (random (360 - 2 * danger-half-angle))) mod 360)
+    set esc-start-subtick subticks
+  ]
+  turn-towards esc-start-heading (max-escape-turn * dt * (1 - flocking-weight))
+  set last-esc-subtick subticks
 end
 
 to escape-biased [dt]
-  let random-threshold 90  ; 90% of the cases lead to a right turn
-  let random-value (random 100)  ; for deciding whether to turn left or right, like `p` in a Bernoulli distribution
-  let random-turn (random 180)
-  ifelse (random-value < random-threshold) [
-    ; Turn right.
-    escape-set-direction dt ((heading + random-turn) mod 360)
-  ][
-    ; Turn left.
-    escape-set-direction dt ((heading - random-turn) mod 360)
+  let go-right (random 100) <= 90  ; go right 90% of the time
+  let rpa relative-predator-angle
+  let ang (biased-angle go-right rpa)
+  if (last-esc-subtick != (subticks - 1)) [
+    print go-right
+    print (rpa mod 360)
+    print heading
+    print ang
   ]
+  escape-set-direction dt ang
 end
 
 to escape-refuge [dt also-escape]
@@ -472,7 +483,7 @@ end
 ;;; EXTRA HELPER PROCEDURES
 
 
-to-report relative-predator-angle
+to-report relative-predator-angle  ; fish reporter
   let x [xcor] of nearest-predator
   let y [ycor] of nearest-predator
   set x (x - xcor)
@@ -483,7 +494,7 @@ to-report relative-predator-angle
   report pred-angle
 end
 
-to-report relative-refuge-angle
+to-report relative-refuge-angle  ; fish reporter
   let x [pxcor] of nearest-refuge
   let y [pycor] of nearest-refuge
   set x (x - xcor)
@@ -493,7 +504,7 @@ to-report relative-refuge-angle
   report refuge-angle
 end
 
-to-report predator-in-angular-region [angle-start angle-stop]
+to-report predator-in-angular-region [angle-start angle-stop]  ; fish reporter
   ; A `fish` procedure that determines whether the nearest predator's
   ; relative angular position w.r.t. the fish lies within the specified
   ; angular range.
@@ -512,11 +523,61 @@ end
 
 to-report nearest-predator-distance [np]
   ifelse (np = nobody) [
-    report 999  ; just a large value
+    report 1e6  ; just a large value
   ][
     let pred-x [xcor] of np
     let pred-y [ycor] of np
     report (pred-x * pred-x) + (pred-y * pred-y)
+  ]
+end
+
+to-report biased-angle [go-right rpa]  ; fish reporter
+  ; This reporter computes the heading a fish should swim to, supplied that
+  ; it strictly needs to go right (left if `go-right` is set to `false`).
+  ;   The complexity of this reporter comes from it taking into account
+  ; that it should not choose 'predator angles', i.e. the direction the
+  ; predator comes from, plus a range of +/- `danger-half-angle` degrees.
+  ; By doing so, many more logical checks need to be made.
+  let abs-rpa-min ((rpa - danger-half-angle) mod 360)
+  let abs-rpa-max ((rpa + danger-half-angle) mod 360)
+  let delta 0  ; only to be changed if we need to go left
+  if (not go-right) [
+    set delta 180
+  ]
+  ifelse (
+    (go-right and abs-rpa-min <= 0 and abs-rpa-max >= 180) or
+    ((not go-right) and abs-rpa-min >= 0 and abs-rpa-max <= 180)) [
+    ; predator is fully out of the half-circle we want to move in
+    report (random-normal (180 / 2) biased-angle-std-dev) + delta
+  ][
+    ifelse (
+      (go-right and (abs-rpa-min <= 0 or abs-rpa-max >= 180)) or
+      ((not go-right) and (abs-rpa-min >= 0 or abs-rpa-max <= 180))) [
+      ; predator is in view, but not with twice the danger-half angle.
+      let strt 0 + delta
+      let stp 180 + delta
+      if ((strt >= abs-rpa-min) and (strt <= abs-rpa-max)) [
+        ; Starting angle is in the predator range of degrees, so shift forward.
+        set strt abs-rpa-max
+      ]
+      if ((stp >= abs-rpa-min) and (stp <= abs-rpa-max)) [
+        ; Ending angle is in the predator range of degrees, so shift backward.
+        set stp abs-rpa-min
+      ]
+      report (strt + (random-normal ((180 - (stp - delta) - (strt - delta)) / 2) biased-angle-std-dev))
+    ][
+      ; predator is fully in view, with twice the danger-half angle.
+      let strt 0 + delta
+      let stp 180 + delta
+      let middle-start abs-rpa-min
+      let ang ((random-normal ((180 - ((abs-rpa-max - delta) - (abs-rpa-min - delta))) / 2) biased-angle-std-dev) + delta)
+      ifelse ((ang >= abs-rpa-min) and (ang <= abs-rpa-max)) [
+        ; our random angle is in the dangerous semicircle, so we need to shift it forward
+        report ang + (abs-rpa-max - abs-rpa-min)
+      ][
+        report ang
+      ]
+    ]
   ]
 end
 
@@ -594,7 +655,7 @@ population
 population
 1.0
 1000.0
-100.0
+1.0
 1.0
 1
 NIL
@@ -669,7 +730,7 @@ minimum-separation
 minimum-separation
 0.0
 5.0
-1.0
+1.75
 0.25
 1
 patches
@@ -978,7 +1039,7 @@ CHOOSER
 escape-strategy
 escape-strategy
 "default" "turn 90 deg" "sacrifice" "sprint" "mixed" "solitary-when-nearby" "zig-zag" "optimal" "protean" "biased" "refuge" "refuge-escape"
-10
+9
 
 SLIDER
 11
@@ -1101,10 +1162,10 @@ always_react?
 SLIDER
 1037
 40
-1270
+1271
 73
-selfish-distance
-selfish-distance
+solitary-distance
+solitary-distance
 0.0
 5.0
 1.0
@@ -1139,10 +1200,10 @@ ticks
 HORIZONTAL
 
 SLIDER
-1038
-154
-1270
-187
+1037
+362
+1269
+395
 number-coral-reefs
 number-coral-reefs
 0
@@ -1154,20 +1215,20 @@ refuges
 HORIZONTAL
 
 TEXTBOX
-1039
-136
-1248
-166
+1038
+344
+1247
+374
 Extra environment variables
 12
 0.0
 1
 
 SLIDER
-1038
-244
-1271
-277
+1037
+452
+1270
+485
 refuge-detection-range
 refuge-detection-range
 0
@@ -1179,10 +1240,10 @@ patches
 HORIZONTAL
 
 SLIDER
-1038
-199
-1270
-232
+1037
+407
+1269
+440
 refuges-per-coral-reef
 refuges-per-coral-reef
 0
@@ -1191,6 +1252,66 @@ refuges-per-coral-reef
 1
 1
 refuges
+HORIZONTAL
+
+SLIDER
+1037
+121
+1270
+154
+protean-turn-interval
+protean-turn-interval
+0
+8
+4.0
+1
+1
+ticks
+HORIZONTAL
+
+SLIDER
+1037
+163
+1270
+196
+danger-half-angle
+danger-half-angle
+0
+40
+20.0
+1
+1
+degrees
+HORIZONTAL
+
+SLIDER
+1037
+204
+1270
+237
+biased-right-probability
+biased-right-probability
+0
+100
+90.0
+1
+1
+%
+HORIZONTAL
+
+SLIDER
+1037
+247
+1270
+280
+biased-angle-std-dev
+biased-angle-std-dev
+0
+40
+30.0
+1
+1
+degrees
 HORIZONTAL
 
 @#$#@#$#@
