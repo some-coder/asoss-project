@@ -129,7 +129,7 @@ to go
           ; We don't need to escape anymore, so we're not hiding at any refuge (anymore).
           set is-at-refuge false
         ]
-        if not ((escape-strategy = "cooperative-selfish") and ((nearest-predator-distance nearest-predator) < selfish-distance)) [
+        if not ((escape-strategy = "solitary-when-nearby") and ((nearest-predator-distance nearest-predator) < selfish-distance)) [
           ; Skip flocking if we're following the (partially) selfish strategy.
           flock dt * weight
         ]
@@ -169,7 +169,7 @@ to select-escape-task [dt]
   if escape-strategy = "sacrifice" [ run   [ [] -> escape-sacrifice dt ] ]
   if escape-strategy = "sprint" [ run   [ [] ->  escape-sprint dt ] ]
   if escape-strategy = "mixed" [ run   [ [] ->  escape-mixed dt ] ]
-  if escape-strategy = "cooperative-selfish" [ run   [ [] ->  escape-cooperative-selfish dt ] ]
+  if escape-strategy = "solitary-when-nearby" [ run   [ [] ->  escape-solitary-when-nearby dt ] ]
   if escape-strategy = "zig-zag" [ run   [ [] ->  escape-zig-zag dt ] ]
   if escape-strategy = "optimal" [ run   [ [] ->  escape-optimal dt ] ]
   if escape-strategy = "protean" [ run   [ [] ->  escape-protean dt ] ]
@@ -368,7 +368,7 @@ to escape-mixed [dt]
   ]
 end
 
-to escape-cooperative-selfish [dt]
+to escape-solitary-when-nearby [dt]
   ; The point of this strategy is that when a predator gets sufficiently close-by,
   ; the `escape-90` gets executed without regard of flocking (cohering, separation,
   ; alignment); fish become selfish. For said mechanism, see the `go` procedure.
@@ -594,7 +594,7 @@ population
 population
 1.0
 1000.0
-1.0
+100.0
 1.0
 1
 NIL
@@ -977,7 +977,7 @@ CHOOSER
 604
 escape-strategy
 escape-strategy
-"default" "turn 90 deg" "sacrifice" "sprint" "mixed" "cooperative-selfish" "zig-zag" "optimal" "protean" "biased" "refuge" "refuge-escape"
+"default" "turn 90 deg" "sacrifice" "sprint" "mixed" "solitary-when-nearby" "zig-zag" "optimal" "protean" "biased" "refuge" "refuge-escape"
 10
 
 SLIDER
@@ -1147,7 +1147,7 @@ number-coral-reefs
 number-coral-reefs
 0
 10
-5.0
+8.0
 1
 1
 refuges

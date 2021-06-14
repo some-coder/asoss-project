@@ -21,7 +21,7 @@ VARIABLE_COLORS <- list(
 	'catches'='#1f78b4')
 STRATEGY_NAMES <- list(
 	'mixed'='Mixed',
-	'cooperative-selfish'='Cooperative-selfish',
+	'solitary-when-nearby'='Solitary when nearby',
 	'zig-zag'='Zig-zag',
 	'optimal'='Optimal',
 	'protean'='Protean',
