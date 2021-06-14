@@ -44,24 +44,37 @@ globals [
   subticks              ;; Keep track of 'de-facto' ticks, taking into account updating frequency.
 ]
 
-to create-refuges  ; observer method
+to create-coral-reefs  ; observer method
   if (escape-strategy = "refuge" or escape-strategy = "refuge-escape") [
-    ; Only create refuges when the strategy involves them.
-    let i refuge-num
+    ; Only create coral reefs when the strategy involves them.
+    let i number-coral-reefs
     loop [
       if (i <= 0) [
         stop
       ]
       let x random-pxcor
       let y random-pycor
-      if (([pcolor] of (patch random-pxcor random-pycor)) != 2) [
-        ; Ensure we select a patch that is not already a refuge.
-        ask patch x y [
-          set pcolor 2
+      ask patch x y [
+        if is-not-already-coral-reef [
+          create-single-refuge
+          set i (i - 1)
         ]
-        set i (i - 1)
       ]
     ]
+  ]
+end
+
+to-report is-not-already-coral-reef  ; patch reporter
+  ; Note that it may be that the patch itself has not already been assigned
+  ; to be a coral reef, but that this instead has been done to one of the
+  ; (radius-1 Moore) neighbours of the patch at (x, y). In such cases we
+  ; also skip said patch, so as to avoid too much overlap between reefs.
+  report (([pcolor] of self) != 2) and (all? neighbors [pcolor != 2])
+end
+
+to create-single-refuge  ; patch procedure
+  ask (n-of refuges-per-coral-reef (patches in-radius 2)) [
+    set pcolor 2
   ]
 end
 
@@ -76,7 +89,7 @@ to setup
     set last-esc-subtick -1
     set is-at-refuge false
   ]
-  create-refuges
+  create-coral-reefs
   set counter 0
   set lock-ons 0
   set ordetect 8
@@ -108,8 +121,8 @@ to go
       ask fish [
         let weight 1
         find-nearest-predator
-        find-nearest-refuge
         ifelse nearest-predator != nobody [
+          find-nearest-refuge  ; Only check for refuges when this is relevant (i.e. during escapes).
           ( select-escape-task dt )
           set weight flocking-weight
         ][
@@ -1128,13 +1141,13 @@ HORIZONTAL
 SLIDER
 1038
 154
-1269
+1270
 187
-refuge-num
-refuge-num
+number-coral-reefs
+number-coral-reefs
 0
-100
-20.0
+10
+5.0
 1
 1
 refuges
@@ -1151,10 +1164,10 @@ Extra environment variables
 1
 
 SLIDER
-1037
-193
-1270
-226
+1038
+244
+1271
+277
 refuge-detection-range
 refuge-detection-range
 0
@@ -1163,6 +1176,21 @@ refuge-detection-range
 1
 1
 patches
+HORIZONTAL
+
+SLIDER
+1038
+199
+1270
+232
+refuges-per-coral-reef
+refuges-per-coral-reef
+0
+10
+6.0
+1
+1
+refuges
 HORIZONTAL
 
 @#$#@#$#@
