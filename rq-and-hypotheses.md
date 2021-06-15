@@ -61,12 +61,50 @@ which have been listed in the previous paragraph.
 
 ## Conclusions
 
-For the **research question**, I reject my hypothesis that the _Refuge-escape_ strategy minimises the number of
+**Research question.** I reject my hypothesis that the _Refuge-escape_ strategy minimises the number of
 caught fish among all eight strategies, because the results pointed out that instead four strategies jointly seem to
 perform all similarly well.
 
-For exactly the same reason, I conclude that I must reject my hypothesis for the **first corollary**.
+Why do _Mixed_, _Solitary when nearby_, _Optimal_ and _Refuge-escape_ perform better than the other four strategies,
+but among themselves about equally well?
 
-Lastly, since I did not have a clear hypothesis for the **second corollary**, I simply re-iterate my observation for
+The answer to the second question may lie in the observation that a lower
+mortality rate is almost impossible; the catch rates are already near-zero percent success (as measured by `C/L`). In
+other words: the way the four 'best' strategies reach a shared minimum may be different, but all four share the fact
+that they reach this near-minimimally possible mortality rate.
+
+Then consider the first question: why do the 'best'
+four strategies perform better than the other four (_Biased_, _Refuge_, _Zig-zag_ and _Protean_)?
+
+First I note that,
+empirically, the _Biased_ and _Refuge_ strategies have a clear sub-optimal effect on fish school mortality rates:
+the _Biased_ strategy may, under bad circumstances, lead fish closer to the predator than away from it (i.e. when
+the predator is to the right and the fish turns right), while the _Refuge_ strategy causes fish to passively
+'meet their doom' when they are not close to a refuge (which, of course, happens from time to time).
+
+What remains is an explanation for the relatively inferiority of _Zig-zag_ and _Protean_. For both, sub-optimal
+escape situations can be conceived. For example, the _Zig-zag_ strategy may perform poorly when a fish has already
+commenced a zig-zag manouver, but after making a curve or half-curve, 'returns' close to the predator, who has only
+moved slightly forward. In these cases we could say that curves and half-curves produced by the fish are an inefficient
+set of movements. (This of ourse assumes the predator does not get confused, which presumably may be a reason why
+_Zig-zag_ is better than, say, _Biased_.) Similarly, the _Protean_ strategy may be invoked ineffectively, for instance
+when it picks an angle very close to the predator's emergence angle.
+
+**RQ, corollary I.** For exactly the same reason as used in my answer to the research question, I conclude that I must
+reject my hypothesis here as well.
+
+**RQ, corollary II.** Since I did not have a clear hypothesis for this corollary, I simply re-iterate my observation for
 this last question: fish school size does impact (a subset of) the strategies' mortality rates, although it does
 not change the best strategy (or, rather, top four of strategies).
+
+Interestingly, 'impact' cannot clearly be interpreted as a raise or decrease in mortality rates; some strategies seem
+to work better (in terms of the `C` and `C/L` metrics) at greater fish school sizes, such as _Biased_, while others
+instead fare better at relatively small fish school sizes (_Mixed_, _Solitary when nearby_). For yet others, no
+clear effect can be observed. This is my underlying argument for the claim that fish school size only 'impacts'
+mortality rates.
+
+Why do the four best strategies remain effective, even if the fish school size increases? If group-level interactions
+among the fish are to be considered, then these effects must affect the mortality rates relatively little, so as to
+keep the top four strategies in their respective ranks. If instead group-level interactions are not significant, then
+since the strategy works best at a low size, and size is not altering this effective working, then it is to be
+expected that the top four strategies remain best. Both scenarios are conceivable.
