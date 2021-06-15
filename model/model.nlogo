@@ -655,7 +655,7 @@ population
 population
 1.0
 1000.0
-1.0
+300.0
 1.0
 1
 NIL
@@ -908,7 +908,7 @@ SWITCH
 87
 hunting?
 hunting?
-0
+1
 1
 -1000
 
@@ -1313,6 +1313,23 @@ biased-angle-std-dev
 1
 degrees
 HORIZONTAL
+
+BUTTON
+300
+645
+633
+708
+Go (2000 ticks)
+repeat 2000 [\n  go\n]
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
