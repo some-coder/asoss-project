@@ -1,4 +1,4 @@
-## Hypotheses
+## Research question and hypotheses
 
 **Research question.** "Which of the following eight escape
 strategies for individual fish leads to the lowest absolute number of catches in the
@@ -40,3 +40,33 @@ becomes more performant at greater fish school sizes, because interactions among
 worse (better) outcomes for the small-size best strategy (a large-size, different strategy).
 On the other hand, these group effects may be negligible, which would cause the small-size
 best strategy to also be best at large sizes of fish schools.
+
+## Results
+
+Also see `plots/strategies.pdf` and `plots/strategies-together.pdf`. It appears that the _Mixed_ and
+_Solitary when nearby_ both reach a shared minimum in number of fish caught, at least so for the fish school size of
+100 individuals. Closely following these two are the _Optimal_ and _Refuge-escape_ strategies, with slightly higher
+mortality rates.
+
+When looking at the catches-over-lock-ons metric (`C/L`), the same four strategies seem to perform best. Only for
+the smallest fish school size considered (100 individuals) the _Solitary when nearby_ method seems to perform
+unambiguously best of all four; for greater fish school sizes, all seem to perform relatively similarly.
+
+As for the impact of fish school size on performance, it seems that a strategy either (i) sees no significant difference
+in performance as the fish school size varies (_Protean_, _Optimal_, _Refuge-escape_), while for others (ii) a
+significant difference arises between fish school sizes of primarily 100 and 200 (_Biased_, _Refuge_, _Zig-zag_,
+_Mixed_, _Solitary when nearby_). Still, the _Solitary when nearby_ keeps a mortality-minimising position even at
+higher fish school sizes, although it needs to share said place with the other three strategies in the sub-top,
+which have been listed in the previous paragraph.
+
+## Conclusions
+
+For the **research question**, I reject my hypothesis that the _Refuge-escape_ strategy minimises the number of
+caught fish among all eight strategies, because the results pointed out that instead four strategies jointly seem to
+perform all similarly well.
+
+For exactly the same reason, I conclude that I must reject my hypothesis for the **first corollary**.
+
+Lastly, since I did not have a clear hypothesis for the **second corollary**, I simply re-iterate my observation for
+this last question: fish school size does impact (a subset of) the strategies' mortality rates, although it does
+not change the best strategy (or, rather, top four of strategies).
