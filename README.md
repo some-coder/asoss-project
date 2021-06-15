@@ -6,23 +6,7 @@ This is my repository for the final project of Advanced Self-Organisation of Soc
 
 ## Research question and strategies
 
-Which of the following eight escape strategies for individual fish leads to the lowest
-absolute number of catches in the `Flocking_TrPEsH.nlogo` model?
-
-| #   | Strategy | Details | References |
-| :-- | :------- | :------ | :--------- |
-| 1 | Mixed | Turn uniformly randomly at the foremost and backmost 40 degrees of the fish, and turn perpendicular to the threat when the threat to one of the fish's sides. | _1_ |
-| 2 | Cooperative-selfish | Unless the threat is very close, try to escape while still flocking with other fish; otherwise escape selfishly (forgetting about flocking) by turning perpendicular from the threat. | _2_ |
-| 3 | Zig-zag | Move away from the threat while making lateral deviations in a sine-wave-like motion. | _3_ (p. 2464) |
-| 4 | Optimal | Turn away from the threat by `90 + asin(speed / predator-speed)` degrees. | _3_ (p. 2467) |
-| 5 | Protean | Turn uniformly randomly, always. | _3_ (p. 2464) |
-| 6 | Biased | Opt to turn right 90% of the time. Then turn in said direction by a uniformly randomly generated degree between 0 and 180. | _3_ (p. 2464) |
-| 7 | Refuges | If a refuge is near, move to the refuge. Otherwise take no action. | _4_, _3_ (p. 2468) |
-| 7 | Refuges with escaping | Like (7), but try to escape by turning away perpendicularly from the threat when no refuge is in sight. | _4_, _3_ (p. 2468) |
-
-**Corollary I.** Which strategy leads to the lowest ratio of catches to lock-ons?
-
-**Corollary II.** Does the size of the fish school impact which strategy is optimal according to these two criteria?
+See the separate `rq-and-hypotheses.md` file.
 
 ## Methods
 
@@ -66,4 +50,3 @@ unnecessary complexity in the data. Data will be analysed using the statistical 
 | _2_ | Zheng, Kashimori, Hoshino, Fujita and Kambara (2004). _Behaviour pattern (innate action) of individuals in fish schools generating efficient collective evasion from predation._ Journal of Theoretical Biology, 235(2), pp. 153–167. DOI: <a href="https://www.sciencedirect.com/science/article/abs/pii/S0022519305000056?via%3Dihub">10.1016/j.jtbi.2004.12.025</a> |
 | _3_ | Domenici, Blagburn and Bacon (2011). _Animal escapolog I: theoretical issues and emerging trends in escape trajectories._ The Journal of Experimental Biology, 214(15), pp. 2463–2473. DOI: <a href="https://journals.biologists.com/jeb/article/214/15/2463/10427/Animal-escapology-I-theoretical-issues-and">10.1242/jeb.029652</a> |
 | _4_ | Cooper Jr. (2016). _Directional escape strategy by the striped plateau lizard_ (Sceloporus virgatus)_: turning to direct escape away from predators at variable escape angles._ Behaviour 153(4), pp. 401–419. DOI: <a href="https://brill.com/view/journals/beh/153/4/article-p401_2.xml">10.1163/1568539X-00003353</a> |
-
