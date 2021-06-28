@@ -521,13 +521,15 @@ to-report predator-in-angular-region [angle-start angle-stop]  ; fish reporter
   ]
 end
 
-to-report nearest-predator-distance [np]
+to-report nearest-predator-distance [np]  ; fish procedure
   ifelse (np = nobody) [
     report 1e6  ; just a large value
   ][
     let pred-x [xcor] of np
     let pred-y [ycor] of np
-    report (pred-x * pred-x) + (pred-y * pred-y)
+    let delta-x abs(xcor - pred-x)
+    let delta-y abs(ycor - pred-y)
+    report (delta-x * delta-x) + (delta-y * delta-y)
   ]
 end
 
@@ -655,7 +657,7 @@ population
 population
 1.0
 1000.0
-300.0
+100.0
 1.0
 1
 NIL
@@ -908,7 +910,7 @@ SWITCH
 87
 hunting?
 hunting?
-1
+0
 1
 -1000
 
@@ -1039,7 +1041,7 @@ CHOOSER
 escape-strategy
 escape-strategy
 "default" "turn 90 deg" "sacrifice" "sprint" "mixed" "solitary-when-nearby" "zig-zag" "optimal" "protean" "biased" "refuge" "refuge-escape"
-9
+5
 
 SLIDER
 11
