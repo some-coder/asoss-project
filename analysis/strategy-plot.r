@@ -5,6 +5,7 @@ OUT_DIR <- '../plots/'
 INPUT_FILE_NAME <- paste0(IN_DIR, 'strategies.csv')
 OUTPUT_FILE_NAME <- paste0(OUT_DIR, 'strategies.pdf')
 OUTPUT_MULTI_STRATEGY_FILE_NAME <- paste0(OUT_DIR, 'strategies-together.pdf')
+OUTPUT_MULTI_STRATEGY_FILE_NAME_JPEG <- paste0(OUT_DIR, 'strategies-together.jpeg')
 
 
 SIMULATION_TIME <- 2.0e3  # in ticks
@@ -226,6 +227,12 @@ main <- function() {
 		OUTPUT_MULTI_STRATEGY_FILE_NAME,
 		plot=multi_strat_plt,
 		device='pdf',
+		width=(13 / 2),
+		height=(19.5 / 3))
+	ggsave(
+		OUTPUT_MULTI_STRATEGY_FILE_NAME_JPEG,
+		plot=multi_strat_plt,
+		device='jpeg',
 		width=(13 / 2),
 		height=(19.5 / 3))
 	return('Exit success.')
