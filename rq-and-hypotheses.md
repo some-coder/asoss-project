@@ -7,7 +7,7 @@ strategies for individual fish leads to the lowest absolute number of catches in
 | #   | Strategy | Details | References |
 | :-- | :------- | :------ | :--------- |
 | 1 | Mixed | Turn uniformly randomly at the foremost and backmost 40 degrees of the fish, and turn perpendicular to the threat when the threat to one of the fish's sides. | _1_ |
-| 2 | Cooperative-selfish | Unless the threat is very close, try to escape while still flocking with other fish; otherwise escape selfishly (forgetting about flocking) by turning perpendicular from the threat. | _2_ |
+| 2 | Solitary when nearby | Unless the threat is very close, try to escape while still flocking with other fish; otherwise escape solitarily (forgetting about flocking) by turning perpendicular from the threat. | _2_ |
 | 3 | Zig-zag | Move away from the threat while making lateral deviations in a sine-wave-like motion. | _3_ (p. 2464) |
 | 4 | Optimal | Turn away from the threat by `90 + asin(speed / predator-speed)` degrees. | _3_ (p. 2467) |
 | 5 | Protean | Turn uniformly randomly, always. | _3_ (p. 2464) |
